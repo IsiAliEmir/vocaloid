@@ -118,28 +118,52 @@ concierto("Miku Expo", "Estados Unidos", 2000, tipo("gigante", 2, 6)).
     % Requiere más de 2 canciones y duración total mayor o igual a 6 minutos.
 concierto("Magical Mirai", "Japon", 3000, tipo("gigante", 3, 10)). 
     % Requiere más de 3 canciones y duración total mayor o igual a 10 minutos.
-concierto("Vocalekt Visions", "Estados Unidos", 1000, tipo("mediano", 9)). 
+concierto("Vocalekt Visions", "Estados Unidos", 1000, tipo("mediano", _, 9)). 
     % Requiere duración total menor o igual a 9 minutos.
-concierto("Miku Fest", "Argentina", 100, tipo("chico", 4)). 
+concierto("Miku Fest", "Argentina", 100, tipo("chico", _, 4)). 
     % Requiere alguna canción de más de 4 minutos.
 /*
 2. Se requiere saber si un vocaloid puede participar en un concierto, esto se da cuando cumple
 los requisitos del tipo de concierto. También sabemos que Hatsune Miku puede participar en
 cualquier concierto. */
 
-puedeParticipar(Vocaloid, concierto(_, _, _, tipo("gigante", XCanciones, XDuracion))):-
-    estaEnNuestraBase(Vocaloid),
+puedeParticipar(Vocaloid, concierto(Nombre, Pais, Fama, tipo("gigante", XCanciones, XDuracion))):-
+    estaEnNuestraBase(Vocaloid), % es un Vocaloid de nuestra base.
+    concierto(Nombre, Pais, Fama, tipo("gigante", XCanciones, XDuracion)), % es un concierto de nuestra base.
     cantaMasDeXCanciones(Vocaloid, XCanciones),
-    not(duraMenosDeXMinutos(Vocaloid, XDuracion)). % >=X es lo mismo que not(<X).
+    not(duraMenosDeXMinutos(Vocaloid, XDuracion)). % "al menos X" es lo mismo que "no menos de" X.
 
-puedeParticipar(Vocaloid, concierto(_, _, _, tipo("mediano", _, XDuracion))):-
-    estaEnNuestraBase(Vocaloid),
-    duraMenosDeXMinutos(Vocaloid, (XDuracion + 1)).
+puedeParticipar(Vocaloid, concierto(Nombre, Pais, Fama, tipo("mediano", _, XDuracion))):-
+    estaEnNuestraBase(Vocaloid), % es un Vocaloid de nuestra base.
+    concierto(Nombre, Pais, Fama, tipo("mediano", _, XDuracion)), % es un concierto de nuestra base.
+    duraMenosDeXMinutos(Vocaloid, (XDuracion + 1)). % en realidad pide menor o igual, por eso le sumo 1.
 
-puedeParticipar(Vocaloid, concierto(_, _, _, tipo("chico", _, _))):-
-    estaEnNuestraBase(Vocaloid),
-    canta(Vocaloid, cancion(_, Duracion)),
-    Duracion > 4.
+puedeParticipar(Vocaloid, concierto(Nombre, Pais, Fama, tipo("chico", _, XDuracion))):-
+    estaEnNuestraBase(Vocaloid), % es un Vocaloid de nuestra base.
+    concierto(Nombre, Pais, Fama, tipo("chico", _, XDuracion)), % es un concierto de nuestra base.
+    canta(Vocaloid, cancion(_, Duracion)), % canta alguna canción tal...
+    Duracion > XDuracion. % ...que su duración sea mayor al parámetro.
 
-puedeParticipar(hatsuneMiku, concierto(_, _, _, _)):-
-    concierto(_, _, _, _).
+puedeParticipar(hatsuneMiku, concierto(Nombre, Pais, Fama, tipo(Tipo, XCanciones, XDuracion))):-
+    concierto(Nombre, Pais, Fama, tipo(Tipo, XCanciones, XDuracion)). % es un concierto de nuestra base.
+/*
+?- puedeParticipar(Quien, Concierto).
+Quien = megurineLuka,
+Concierto = concierto("Vocalekt Visions", "Estados Unidos", 1000, tipo("mediano", _, 9)) ;
+Quien = gumi,
+Concierto = concierto("Vocalekt Visions", "Estados Unidos", 1000, tipo("mediano", _, 9)) ;
+Quien = megurineLuka,
+Concierto = concierto("Miku Fest", "Argentina", 100, tipo("chico", _, 4)) ;
+Quien = gumi,
+Concierto = concierto("Miku Fest", "Argentina", 100, tipo("chico", _, 4)) ;
+Quien = seeU,
+Concierto = concierto("Miku Fest", "Argentina", 100, tipo("chico", _, 4)) ;
+Quien = hatsuneMiku,
+Concierto = concierto("Miku Expo", "Estados Unidos", 2000, tipo("gigante", 2, 6)) ;
+Quien = hatsuneMiku,
+Concierto = concierto("Magical Mirai", "Japon", 3000, tipo("gigante", 3, 10)) ;
+Quien = hatsuneMiku,
+Concierto = concierto("Vocalekt Visions", "Estados Unidos", 1000, tipo("mediano", _, 9)) ;
+Quien = hatsuneMiku,
+Concierto = concierto("Miku Fest", "Argentina", 100, tipo("chico", _, 4)).
+*/
