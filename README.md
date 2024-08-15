@@ -1,0 +1,1 @@
+## Resuelvo parcial Lógico: Vocaloid
